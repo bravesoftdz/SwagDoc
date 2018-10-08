@@ -20,85 +20,59 @@
 {                                                                              }
 {******************************************************************************}
 
-unit Json.Commom.Helpers;
+unit Sample.Main;
 
 interface
 
 uses
-  System.JSON;
+  System.SysUtils,
+  System.Types,
+  System.UITypes,
+  System.Classes,
+  System.Variants,
+  FMX.Types,
+  FMX.Controls,
+  FMX.Forms,
+  FMX.Graphics,
+  FMX.Dialogs,
+  FMX.Controls.Presentation,
+  FMX.StdCtrls, FMX.ScrollBox, FMX.Memo;
 
 type
-  TJSONAncestorHelper = class helper for TJSONAncestor
+  TForm1 = class(TForm)
+    Button1: TButton;
+    Memo1: TMemo;
+    procedure Button1Click(Sender: TObject);
+  private
+    { Private declarations }
   public
-    function Format: string;
+    { Public declarations }
   end;
 
-  TJsonObjectHelper = class helper for TJsonObject
-  public
-    procedure AddPair(const pName: string; const pValue: Extended); overload;
-  end;
+var
+  Form1: TForm1;
 
 implementation
 
-{ TJSONAncestorHelper }
+{$R *.fmx}
 
-function TJSONAncestorHelper.Format: string;
+uses
+  Sample.SwagDoc;
+
+procedure TForm1.Button1Click(Sender: TObject);
 var
-  vJsonString: string;
-  vChar: Char;
-  vEOL: string;
-  vIndent: string;
-  vLeftIndent: string;
-  vIsEOL: Boolean;
-  vIsInString: Boolean;
-  vIsEscape: Boolean;
+  vSampleDocApi: TSampleApiSwagDocBuilder;
 begin
-  vEOL := #13#10;
-  vIndent := '  ';
-  vIsEOL := true;
-  vIsInString := false;
-  vIsEscape := false;
-  vJsonString := Self.ToString;
-  for vChar in vJsonString do
-  begin
-    if not vIsInString and ((vChar = '{') or (vChar = '[')) then
-    begin
-      if not vIsEOL then
-        Result := Result + vEOL;
-      Result := Result + vLeftIndent + vChar + vEOL;
-      vLeftIndent := vLeftIndent + vIndent;
-      Result := Result + vLeftIndent;
-      vIsEOL := true;
-    end
-    else if not vIsInString and (vChar = ',') then
-    begin
-      vIsEOL := false;
-      Result := Result + vChar + vEOL + vLeftIndent;
-    end
-    else if not vIsInString and ((vChar = '}') or (vChar = ']')) then
-    begin
-      Delete(vLeftIndent, 1, Length(vIndent));
-      if not vIsEOL then
-        Result := Result + vEOL;
-      Result := Result + vLeftIndent + vChar + vEOL;
-      vIsEOL := true;
-    end
-    else
-    begin
-      vIsEOL := false;
-      Result := Result + vChar;
-    end;
-    vIsEscape := (vChar = '\') and not vIsEscape;
-    if not vIsEscape and (vChar = '"') then
-      vIsInString := not vIsInString;
+  vSampleDocApi := TSampleApiSwagDocBuilder.Create;
+  try
+    vSampleDocApi.DeployFolder := ExtractFilePath(ParamStr(0));
+    memo1.Lines.Text := vSampleDocApi.Generate;
+  finally
+    vSampleDocApi.Free;
   end;
 end;
 
-{ TJsonObjectHelper }
-
-procedure TJsonObjectHelper.AddPair(const pName: string; const pValue: Extended);
-begin
-  Self.AddPair(pName, TJsonNumber.Create(pValue));
-end;
+initialization
+  ReportMemoryLeaksOnShutdown := True;
 
 end.

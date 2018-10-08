@@ -20,74 +20,94 @@
 {                                                                              }
 {******************************************************************************}
 
-unit Swag.Doc.Definition;
+unit Json.Schema.Field;
 
 interface
 
 uses
-  System.JSON;
+  System.Rtti,
+  System.Classes,
+  System.Json;
 
 type
-  /// <summary>
-  /// The Schema Object allows the definition of input and output data types.
-  /// These types can be objects, but also primitives and arrays.
-  /// This object is based on the JSON Schema Specification Draft 4 and uses a predefined subset of it.
-  /// On top of this subset, there are extensions provided by this specification to allow for more complete documentation.
-  /// Further information about the properties can be found in JSON Schema Core and JSON Schema Validation.
-  /// Unless stated otherwise, the property definitions follow the JSON Schema specification as referenced here.
-  /// </summary>
-  TSwagDefinition = class(TObject)
-  private
+  TJsonFieldClass = class of TJsonField;
+
+  TJsonField = class abstract(TPersistent)
+  strict private
+    fTypeName: string;
+    function GetTypeName: string;
+  strict protected
     fName: string;
-    fJsonSchema: TJsonObject;
-    procedure SetName(const Value: string);
-    procedure SetJsonSchema(const Value: TJsonObject);
-    function GetJsonSchema: TJsonObject;
+    fDescription: string;
+    fRequired: Boolean;
+    fNullable: Boolean;
+
+    property TypeName: string read GetTypeName;
   public
-    function GenerateJsonRefDefinition: TJsonObject;
+    constructor Create; reintroduce; virtual;
 
-    /// <summary>
-    /// The schema name alias.
-    /// </summary>
-    property Name: string read fName write SetName;
+    function ToJsonSchema: TJsonObject; virtual;
+    function Clone: TJsonField; virtual;
 
-    /// <summary>
-    /// See more in:
-    ///  * http://json-schema.org
-    ///  * https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
-    /// </summary>
-    property JsonSchema: TJsonObject read GetJsonSchema write SetJsonSchema;
+    property Name: string read fName write fName;
+    property Description: string read fDescription write fDescription;
+    property Required: Boolean read fRequired write fRequired;
+    property Nullable: Boolean read fNullable write fNullable;
   end;
 
 implementation
 
 uses
-  System.SysUtils;
+  System.SysUtils,
+  Json.Schema.Common.Types;
 
-{ TSwagDefinition }
+{ TJsonField }
 
-function TSwagDefinition.GetJsonSchema: TJsonObject;
+function TJsonField.Clone: TJsonField;
 begin
-  Result := fJsonSchema;
+  Result := TJsonField(TJsonFieldClass(FindClass(Self.ClassName)).Create);
+  Result.Name := Self.fName;
+  Result.Description := Self.fDescription;
+  Result.Required := Self.fRequired;
+  Result.Nullable := Self.fNullable;
 end;
 
-procedure TSwagDefinition.SetJsonSchema(const Value: TJsonObject);
+constructor TJsonField.Create;
 begin
-  fJsonSchema := Value;
+  inherited Create;
 end;
 
-procedure TSwagDefinition.SetName(const Value: string);
+function TJsonField.GetTypeName: string;
+var
+  vContext: TRttiContext;
+  vType: TRttiType;
+  vAttribute: TCustomAttribute;
 begin
-  fName := Value;
+  if not fTypeName.IsEmpty then
+  begin
+    Result := fTypeName;
+    Exit;
+  end;
+
+  vContext := TRttiContext.Create;
+  vType := vContext.GetType(Self.ClassType);
+  for vAttribute in vType.GetAttributes do
+    if vAttribute is ASchemaType then
+    begin
+      fTypeName := ASchemaType(vAttribute).Name;
+      Break;
+    end;
+
+  Result := fTypeName;
 end;
 
-function TSwagDefinition.GenerateJsonRefDefinition: TJsonObject;
-const
-  c_SchemaRef = '$ref';
-  c_PrefixDefinitionName = '#/definitions/';
+function TJsonField.ToJsonSchema: TJsonObject;
 begin
   Result := TJsonObject.Create;
-  Result.AddPair(c_SchemaRef, c_PrefixDefinitionName + fName);
+  Result.AddPair('type', GetTypeName);
+  if not fDescription.IsEmpty then
+    Result.AddPair('description', fDescription);
 end;
+
 
 end.

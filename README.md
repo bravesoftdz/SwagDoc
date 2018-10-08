@@ -1,6 +1,9 @@
 # SwagDoc
 SwagDoc is a Delphi library to generate swagger.json file for Swagger Spec version 2.0. Create a public documentation REST API using Swagger 2.0 for Delphi Language. SwagDoc's only responsibility is to generate the swagger.json file. The swagger.json file is responsible for containing all the documentation for your REST API. This file must be attached to the Swagger UI (User Interface) files. 
 
+[![PayPal donate button](http://img.shields.io/paypal/donate.png?color=yellowgreen)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AW8TZ2QTDA7K8)
+
+
 ## Swagger - version 2.0
 
 SwagDoc follows the specification 2.0 because it is more popular in the market and also because it is considered a more stable version to exist the longest. SwagDoc does not yet support the Swagger 3.0 version, but depending on the demand and contributions to the project it may evolve to support spec 3.0.
@@ -11,9 +14,22 @@ https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
 
 When creating a Swagger documentation for your REST API you can produce a page like the following example.
 
-![image](https://user-images.githubusercontent.com/20048296/39936694-a4d9ac9a-5523-11e8-8161-98d0e396eb6f.png)
+![image](https://user-images.githubusercontent.com/20048296/46588904-c6cd5880-ca79-11e8-8a8a-ec38ba7ff95a.png)
+
+
+## Swagger Tools
+
+- Swagger Editor:
+https://editor.swagger.io
+
+- The classic swagger sample:
 http://petstore.swagger.io
 
+- Tools and Integrations:
+https://swagger.io/tools/open-source/open-source-integrations
+
+
+## Swagger UI distribution files
 
 For you to produce a page containing a Swagger documentation you need the Swagger UI distribution files.
 
